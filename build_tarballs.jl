@@ -22,71 +22,58 @@ info("Building for $(join(triplet.(platforms), ", "))")
 
 # Collection of sources required to build L-BFGS-B
 sources = [
-    "http://users.iems.northwestern.edu/~nocedal/Software/Lbfgsb.3.0.tar.gz" =>
-    "f5b9a1c8c30ff6bcc8df9b5d5738145f4cbe4c7eadec629220e808dcf0e54720",
+    "http://users.iems.northwestern.edu/~nocedal/Software/Lbfgsb.2.1.tar.gz" =>
+    "343b566b5b3bd3d762bfafcebf873a1c3285ef49e66711c6853098ab6ec43c62",
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir
-cd Lbfgsb.3.0/
+cd Lbfgsb.2.1/
 
 cat > Makefile.patch << 'EOP'
 --- Makefile
 +++ Makefile
-@@ -1,37 +1,30 @@
-+VERSION = 3
-+
- FC = gfortran
-+FFLAGS = -O3 -fPIC -shared -Wall -fbounds-check -g -Wno-uninitialized
+@@ -1,21 +1,24 @@
+-FC = gfortran
+-
+-FFLAGS = -O
+-
+-DRIVER1 = driver1.o
+-DRIVER2 = driver2.o
+-DRIVER3 = driver3.o
+-
+-ROUTINES = routines.o
++VERSION = 2
 
--FFLAGS = -O -Wall -fbounds-check -g -Wno-uninitialized
+-all :  lbfgsb1 lbfgsb2 lbfgsb3
+-
+-lbfgsb1 : $(DRIVER1) $(ROUTINES)
+-	$(FC) $(FFLAGS) $(DRIVER1) $(ROUTINES) -o x.lbfgsb1
+-
+-lbfgsb2 : $(DRIVER2) $(ROUTINES)
+-	$(FC) $(FFLAGS) $(DRIVER2) $(ROUTINES) -o x.lbfgsb2
+-
+-lbfgsb3 : $(DRIVER3) $(ROUTINES)
+-	$(FC) $(FFLAGS) $(DRIVER3) $(ROUTINES) -o x.lbfgsb3
++FC = gfortran
++FFLAGS = -O3 -fPIC -shared
 +LIB_SEARCH_PATH = lib
 
--DRIVER1_77 = driver1.f
--DRIVER2_77 = driver2.f
--DRIVER3_77 = driver3.f
--
--DRIVER1_90 = driver1.f90
--DRIVER2_90 = driver2.f90
--DRIVER3_90 = driver3.f90
 +OS := $(shell uname)
 +ifeq ($(OS), Linux)
-+  SHLIB_EXT := so
++SHLIB_EXT := so
 +else ifeq ($(OS), Darwin)
-+  SHLIB_EXT := dylib
++SHLIB_EXT := dylib
 +else
-+  SHLIB_EXT := dll
-+	LIB_SEARCH_PATH = bin
++SHLIB_EXT := dll
++LIB_SEARCH_PATH = bin
 +endif
-
- LBFGSB  = lbfgsb.f
- LINPACK = linpack.f
- BLAS    = blas.f
- TIMER   = timer.f
-
--all :  lbfgsb_77_1 lbfgsb_77_2 lbfgsb_77_3 lbfgsb_90_1 lbfgsb_90_2 lbfgsb_90_3
--
--
--lbfgsb_77_1 : $(DRIVER1_77) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
--	$(FC) $(FFLAGS) $(DRIVER1_77) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER) -o x.lbfgsb_77_1
--
--lbfgsb_77_2 : $(DRIVER2_77) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
--	$(FC) $(FFLAGS) $(DRIVER2_77) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER) -o x.lbfgsb_77_2
--
--lbfgsb_77_3 : $(DRIVER3_77) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
--	$(FC) $(FFLAGS) $(DRIVER3_77) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER) -o x.lbfgsb_77_3
--
--lbfgsb_90_1 : $(DRIVER1_90) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
--	$(FC) $(FFLAGS) $(DRIVER1_90) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER) -o x.lbfgsb_90_1
-+lbfgsb : $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
-+	$(FC) $(FFLAGS) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER) -o liblbfgsb-$(VERSION).$(SHLIB_EXT)
-
--lbfgsb_90_2 : $(DRIVER2_90) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
--	$(FC) $(FFLAGS) $(DRIVER2_90) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER) -o x.lbfgsb_90_2
++
++lbfgsb : routines.f
++	$(FC) $(FFLAGS) routines.f -o liblbfgsb-$(VERSION).$(SHLIB_EXT)
++
 +all : lbfgsb
-
--lbfgsb_90_3 : $(DRIVER3_90) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
--	$(FC) $(FFLAGS) $(DRIVER3_90) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER) -o x.lbfgsb_90_3
++
 +install :
 +	mkdir -p $(WORKSPACE)/destdir/$(LIB_SEARCH_PATH)
 +	cp -f liblbfgsb*$(SHLIB_EXT) $(WORKSPACE)/destdir/$(LIB_SEARCH_PATH)/
@@ -96,6 +83,7 @@ patch --ignore-whitespace < Makefile.patch
 
 make
 make install
+
 """
 
 products = prefix -> [
