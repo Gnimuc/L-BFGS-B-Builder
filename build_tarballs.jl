@@ -12,7 +12,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd Lbfgsb.3.0/
 
-cat > Makefile.patch << 'EOP'
+cat > Makefile.patch << 'END'
 --- Makefile
 +++ Makefile
 @@ -1,37 +1,30 @@
@@ -72,7 +72,7 @@ cat > Makefile.patch << 'EOP'
 +install :
 +	mkdir -p $(WORKSPACE)/destdir/$(LIB_SEARCH_PATH)
 +	cp -f liblbfgsb*$(SHLIB_EXT) $(WORKSPACE)/destdir/$(LIB_SEARCH_PATH)/
-EOP
+END
 
 patch --ignore-whitespace < Makefile.patch
 
