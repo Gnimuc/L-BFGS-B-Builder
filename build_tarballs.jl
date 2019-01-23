@@ -103,7 +103,7 @@ platforms = [
     Windows(:i686),
     Windows(:x86_64)
 ]
-platform = expand_gcc_versions(platform)
+platforms = expand_gcc_versions(platforms)
 
 # The products that we will ensure are always built
 products(prefix) = [
