@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "LBFGSB"
-version = v"3.0"
+version = v"3.0.0"
 
 # Collection of sources required to build LBFGSB
 sources = [
@@ -66,7 +66,7 @@ cat > Makefile.patch << 'END'
 -lbfgsb_90_1 : $(DRIVER1_90) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
 -	$(FC) $(FFLAGS) $(DRIVER1_90) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER) -o x.lbfgsb_90_1
 +lbfgsb : $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
-+	$(FC) $(FFLAGS) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER) -o liblbfgsb-$(VERSION).$(SHLIB_EXT)
++	$(FC) $(LDFLAGS) $(FFLAGS) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER) -o liblbfgsb-$(VERSION).$(SHLIB_EXT)
 
 -lbfgsb_90_2 : $(DRIVER2_90) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
 -	$(FC) $(FFLAGS) $(DRIVER2_90) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER) -o x.lbfgsb_90_2
@@ -89,20 +89,20 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Linux(:i686, :glibc),
-    Linux(:x86_64, :glibc),
-    Linux(:aarch64, :glibc),
-    Linux(:armv7l, :glibc, :eabihf),
-    #Linux(:powerpc64le, :glibc),
-    Linux(:i686, :musl),
-    Linux(:x86_64, :musl),
-    Linux(:aarch64, :musl),
-    Linux(:armv7l, :musl, :eabihf),
-    #MacOS(:x86_64),
+    Linux(:i686, libc=:glibc),
+    Linux(:x86_64, libc=:glibc),
+    Linux(:aarch64, libc=:glibc),
+    Linux(:armv7l, libc=:glibc, call_abi=:eabihf),
+    Linux(:i686, libc=:musl),
+    Linux(:x86_64, libc=:musl),
+    Linux(:aarch64, libc=:musl),
+    Linux(:armv7l, libc=:musl, call_abi=:eabihf),
+    MacOS(:x86_64),
     FreeBSD(:x86_64),
     Windows(:i686),
     Windows(:x86_64)
 ]
+
 platforms = expand_gcc_versions(platforms)
 
 # The products that we will ensure are always built
@@ -112,7 +112,7 @@ products(prefix) = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-
+    
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
